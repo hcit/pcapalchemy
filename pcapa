@@ -1,0 +1,22 @@
+#!/usr/bin/env python
+
+import argparse
+
+from pcapalchemy import PcapAlchemy
+
+
+def args_config():
+    parser = argparse.ArgumentParser(
+        description='Generate a pcap file from various sources and settings')
+
+    parser.add_argument('-w', '--write', dest='write',
+        help='Destination file to write pcap file to.')
+    return parser.parse_args()
+
+def main():
+    config = args_config()
+    PcapAlchemy(config).process()
+
+if __name__ == '__main__':
+    main()
+
