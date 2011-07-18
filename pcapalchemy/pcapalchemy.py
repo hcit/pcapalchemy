@@ -145,9 +145,9 @@ class PcapAlchemy(object):
                 yield y
 
     def log_status(self):
-        if alchemy.total_packets % 100 == 0 and \
-                alchemy.time_range.total_seconds() > 0:
-            print alchemy.time_range, alchemy.total_bytes, \
-                alchemy.total_bytes / alchemy.time_range.total_seconds() \
+        if self.total_packets % 100 == 0 and \
+                self.time_range.total_seconds() > 0:
+            print self.time_range, self.total_bytes, \
+                self.total_bytes / self.time_range.total_seconds() \
             / 1000000
 
