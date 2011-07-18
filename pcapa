@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import runpy
 import argparse
 
 from pcapalchemy import PcapAlchemy
@@ -7,15 +8,27 @@ from pcapalchemy import PcapAlchemy
 
 def args_config():
     parser = argparse.ArgumentParser(
-        description='Generate a pcap file from various sources and settings')
+        description='Generate a pcap file from various sources and settings.')
 
-    parser.add_argument('-w', '--write', dest='write',
-        help='Destination file to write pcap file to.')
+    # Required
+    parser.add_argument('-c', dest='config_module', metavar='FILENAME',
+        required=True,
+        help='file containing configuration on how to generate the pcap file')
+    parser.add_argument('-w', dest='write_fn', metavar='FILENAME',
+        required=True,
+        help='write pcap file to this destination')
+
+    # Optional
+    parser.add_argument('-s', dest='cache_dir', metavar='FILENAME',
+        default='',
+        help='path for storing cache')
+
     return parser.parse_args()
 
 def main():
     config = args_config()
-    PcapAlchemy(config).process()
+    alchemy = PcapAlchemy(config)
+    runpy.run_module(config.config_module, init_globals=locals())
 
 if __name__ == '__main__':
     main()
