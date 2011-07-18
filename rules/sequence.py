@@ -5,13 +5,22 @@ import datetime
 import time
 import glob
 
-alchemy.timestamp = datetime.datetime.now() - datetime.timedelta(days=1)
+start = -2
+end = 2
+
+alchemy.timestamp = datetime.datetime.now() - datetime.timedelta(days=-start)
 alchemy.source_files = glob.glob('dumps/cctf-defcon11/ulogd.znb0.pcap.*')
 
-while alchemy.time_range < datetime.timedelta(days=2):
+exito = False
+
+while not exito:
 
     for ts, pkt in alchemy.loop_pcap():
         alchemy.emit(pkt)
-        alchemy.timestamp += datetime.timedelta(seconds=-1)
+        alchemy.timestamp += datetime.timedelta(seconds=1)
         alchemy.log_status()
+
+        if alchemy.time_range > datetime.timedelta(days=end - start):
+            exito = True
+            break
 

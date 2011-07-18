@@ -26,6 +26,8 @@ class PcapAlchemy(object):
         self.total_bytes = 0
         self.total_packets = 0
 
+        self.last_log = None
+
     #--------------------------------------------------------------------------
 
     def prepare_sources(self):
@@ -116,6 +118,10 @@ class PcapAlchemy(object):
         return pkt
 
     def emit(self, pkt):
+        '''
+        Write a packet into the configured output file. This method also keeps
+        track of counters, timestamps and total time ranges.
+        '''
         ts = time.mktime(self.timestamp.timetuple())
         self.writer.writepkt(pkt, ts=ts)
 
@@ -129,6 +135,10 @@ class PcapAlchemy(object):
 
 
     def loop_pcap(self, specific=None):
+        '''
+        Iterate through all pcap files, unless a specific file is mentioned.
+        This method yields a tuple of timestamp and packet data.
+        '''
 
         def _loop(fn):
             r = dpkt.pcap.Reader(open(fn, 'rb'))
@@ -144,10 +154,22 @@ class PcapAlchemy(object):
             for y in _loop(specific):
                 yield y
 
-    def log_status(self):
-        if self.total_packets % 100 == 0 and \
-                self.time_range.total_seconds() > 0:
-            print self.time_range, self.total_bytes, \
-                self.total_bytes / self.time_range.total_seconds() \
-            / 1000000
+    def log_status(self, skip=1):
+        '''
+        Displays the progress of number of pcaps created.
+        '''
+        if self.last_log and self.last_log + skip > time.time():
+            return
+
+        if self.time_range.total_seconds() < 1:
+            return
+
+        self.last_log = time.time()
+
+        print 'tspan: %-20s Written: %-20s KBps: %-20s' % (
+            self.time_range,
+            self.total_bytes,
+            self.total_bytes / self.time_range.total_seconds() \
+            / 1000
+        )
 
