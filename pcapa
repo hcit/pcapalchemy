@@ -20,7 +20,7 @@ def args_config():
 
     # Optional
     parser.add_argument('-s', dest='cache_dir', metavar='FILENAME',
-        default='',
+        default='~/.pcapalchemy',
         help='path for storing cache')
 
     return parser.parse_args()

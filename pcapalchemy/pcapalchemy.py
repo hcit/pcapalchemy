@@ -16,6 +16,9 @@ class PcapAlchemy(object):
 
     def __init__(self, config):
         self.config = config
+
+        self.config.cache_dir = self.fix_path(self.config.cache_dir)
+
         self._source_files = []
 
         self.timestamp = datetime.datetime.now()
@@ -27,6 +30,15 @@ class PcapAlchemy(object):
         self.total_packets = 0
 
         self.last_log = None
+
+    #--------------------------------------------------------------------------
+
+    def fix_path(self, path):
+        path = os.path.expanduser(path)
+        if os.path.exists(path):
+            return path
+        os.makedirs(path)
+        return path
 
     #--------------------------------------------------------------------------
 
