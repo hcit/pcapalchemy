@@ -11,9 +11,9 @@ def args_config():
         description='Generate a pcap file from various sources and settings.')
 
     # Required
-    parser.add_argument('-c', dest='config_module', metavar='FILENAME',
+    parser.add_argument('-c', dest='config_module', metavar='MODULE',
         required=True,
-        help='file containing configuration on how to generate the pcap file')
+        help='module containing rules on how to generate the pcap file')
     parser.add_argument('-w', dest='write_fn', metavar='FILENAME',
         required=True,
         help='write pcap file to this destination')

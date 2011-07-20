@@ -5,8 +5,8 @@ import datetime
 import time
 import glob
 
-start = -2
-end = 2
+start = -30
+end = 0
 
 alchemy.timestamp = datetime.datetime.now() - datetime.timedelta(days=-start)
 alchemy.source_files = glob.glob('dumps/cctf-defcon11/ulogd.znb0.pcap.*')

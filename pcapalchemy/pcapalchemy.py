@@ -24,7 +24,8 @@ class PcapAlchemy(object):
         self.timestamp = datetime.datetime.now()
         self.earliest = None
         self.latest = None
-        self.writer = dpkt.pcap.Writer(open(self.config.write_fn, 'wb'))
+        self.writer = dpkt.pcap.Writer(open(self.config.write_fn, 'wb'),
+            linktype=dpkt.pcap.DLT_RAW)
 
         self.total_bytes = 0
         self.total_packets = 0
@@ -44,7 +45,7 @@ class PcapAlchemy(object):
 
     def prepare_sources(self):
         '''
-        Quick scan through pcaps
+        Scan through pcap files and get some information out of them.
         '''
         self.stats = Stats()
         self.stats.total = 0
@@ -100,6 +101,11 @@ class PcapAlchemy(object):
 
     #--------------------------------------------------------------------------
 
+    def clean_packet(self, reader, pkt):
+        offset = dpkt.pcap.dltoff.get(reader.datalink(), 0)
+        pkt = pkt[offset:]
+        return pkt
+
     def packet_random(self, max_iter=0):
         '''
         Randomly picks a single packet from the whole set of pcap files.
@@ -109,16 +115,11 @@ class PcapAlchemy(object):
         if max_iter:
             opts.append(max_iter)
 
-        rand = random.randint(0, min(opts))
-        c = 0
-        for f, total in self.stats.files.iteritems():
-            c += total
-            if c > rand:
-                o = random.randint(0, min(opts))
-                break
+        f = self.source_files[0]
 
         r = dpkt.pcap.Reader(open(f, 'rb'))
         pkt = None
+        o = random.randint(0, min(opts))
         for ts, pkt in r:
             o -= 1
             if o < 0:
@@ -126,6 +127,8 @@ class PcapAlchemy(object):
 
         if not pkt:
             assert(0)
+
+        pkt = self.clean_packet(r, pkt)
 
         return pkt
 
