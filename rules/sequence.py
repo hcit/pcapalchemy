@@ -1,26 +1,30 @@
-# Sample pcapa rules file
+'''
+Sequence
 
+'''
 import random
 import datetime
 import time
-import glob
 
-start = -30
-end = 0
+def config(parser):
+    return
 
-alchemy.timestamp = datetime.datetime.now() - datetime.timedelta(days=-start)
-alchemy.source_files = glob.glob('dumps/cctf-defcon11/ulogd.znb0.pcap.*')
 
-exito = False
+def loop(alchemy):
+    start = -365
+    end = 0
 
-while not exito:
+    alchemy.timestamp = datetime.datetime.now() - datetime.timedelta(days=-start)
 
-    for ts, pkt in alchemy.loop_pcap():
-        alchemy.emit(pkt)
-        alchemy.timestamp += datetime.timedelta(seconds=1)
-        alchemy.log_status()
+    exito = False
+    while not exito:
+        for ts, pkt in alchemy.all_packets():
+            alchemy.emit(pkt)
+            alchemy.timestamp += datetime.timedelta(seconds=60 * 60 *
+                random.random())
+            alchemy.log_status()
 
-        if alchemy.time_range > datetime.timedelta(days=end - start):
-            exito = True
-            break
+            if alchemy.time_range > datetime.timedelta(days=end - start):
+                exito = True
+                break
 

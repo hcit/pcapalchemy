@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 
+import importlib
 import runpy
 import argparse
+import glob
 
 from pcapalchemy import PcapAlchemy
 
@@ -17,18 +19,31 @@ def args_config():
     parser.add_argument('-w', dest='write_fn', metavar='FILENAME',
         required=True,
         help='write pcap file to this destination')
+    parser.add_argument('-r', dest='pcap_src', metavar='SRC',
+        required=True, nargs='+',
+        help='source of pcap file(s). Can be any sort of glob.')
 
     # Optional
     parser.add_argument('-s', dest='cache_dir', metavar='FILENAME',
         default='~/.pcapalchemy',
         help='path for storing cache')
 
+    # Add arguments from specified module
+    config = parser.parse_args()
+    mod = importlib.import_module(config.config_module)
+    mod.config(parser)
+
+    # Reread the arguments since the module config can add some
     return parser.parse_args()
+
 
 def main():
     config = args_config()
     alchemy = PcapAlchemy(config)
-    runpy.run_module(config.config_module, init_globals=locals())
+    for pcap in config.pcap_src:
+        alchemy.source_files = glob.glob(pcap)
+    mod = importlib.import_module(config.config_module)
+    mod.loop(alchemy)
 
 if __name__ == '__main__':
     main()

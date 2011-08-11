@@ -70,9 +70,13 @@ class PcapAlchemy(object):
                 print('%s: %s' % (f, e))
                 continue
 
-            for ts, buf in r:
-                self.stats.total += 1
-                self.stats.files[f] += 1
+            try:
+                for ts, buf in r:
+                    self.stats.total += 1
+                    self.stats.files[f] += 1
+            except dpkt.dpkt.NeedData, e:
+                print e
+                continue
 
             print('%s: %s' % (f, self.stats.files[f]))
 
@@ -132,24 +136,30 @@ class PcapAlchemy(object):
 
         return pkt
 
-    def emit(self, pkt):
+    def emit(self, pkt, timestamp=None):
         '''
         Write a packet into the configured output file. This method also keeps
         track of counters, timestamps and total time ranges.
         '''
-        ts = time.mktime(self.timestamp.timetuple())
+        if not timestamp:
+            timestamp = self.timestamp
+
+        if issubclass(timestamp.__class__, float):
+            timestamp = datetime.datetime.fromtimestamp(timestamp)
+
+        ts = time.mktime(timestamp.timetuple())
         self.writer.writepkt(pkt, ts=ts)
 
         self.total_packets += 1
         self.total_bytes += len(pkt)
 
-        if not self.latest or self.timestamp > self.latest:
-            self.latest = self.timestamp
-        if not self.earliest or self.timestamp < self.earliest:
-            self.earliest = self.timestamp
+        if not self.latest or timestamp > self.latest:
+            self.latest = timestamp
+        if not self.earliest or timestamp < self.earliest:
+            self.earliest = timestamp
 
 
-    def loop_pcap(self, specific=None):
+    def all_packets(self, specific=None):
         '''
         Iterate through all pcap files, unless a specific file is mentioned.
         This method yields a tuple of timestamp and packet data.
